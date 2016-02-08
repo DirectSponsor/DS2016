@@ -1,0 +1,79 @@
+/*
+    Created on : 24-Aug-2015, 24-Aug-2015 17:21:16
+    Author     : Paul
+*/
+@media (min-width: 200px) {
+    body{font-size: 12px;}
+    .btn-late-payment {
+        margin-top: 5px;
+        float: right;
+    }
+}
+@media (min-width: 768px) {
+    body{font-size: 13px;}
+    .btn-late-payment {
+        margin-top: 0;
+    }
+}
+@media (min-width: 769px) {
+    body{font-size: 14px;}
+    .btn-late-payment {
+        margin-top: 0;
+    }
+}
+
+
+#page {
+    max-width: 1080px;
+}
+.container-fluid {
+    margin: 0 auto;
+ }
+ .bottom-border-light {
+     border-bottom: 1px solid #cccccc;
+ }
+#content .inner{
+    margin-top: 10px;
+    background-color: #ffffff;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    border-radius: 14px;
+    padding: 20px;
+    border:1px solid #cccccc;
+}
+/*#content > div.inner {
+    overflow-y: scroll;
+}*/
+th{
+    font-weight: bold;
+    background-color: #5ea5ea;
+    color: #fff;
+}
+.table-striped > tbody > tr:nth-of-type(2n+1) {
+  background-color: #e9f9f9;
+}
+.btn {
+    /*margin-bottom: 5px;*/
+    min-width: 100px;
+    padding: 3px;
+}
+hr {
+    border-color: #000;
+}
+.topGap {
+    margin-top: 10px;
+}
+.botGap {
+    margin-bottom: 10px;
+}
+.center {
+     float: none;
+     margin-left: auto;
+     margin-right: auto;
+}
+.pointer {
+    cursor: pointer;
+}
+.vertical-middle {
+    vertical-align: middle;
+}
