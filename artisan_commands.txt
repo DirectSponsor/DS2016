@@ -1,0 +1,54 @@
+/* Get column names for fill option in Laravel Model */
+SELECT COLUMN_NAME FROM `COLUMNS` WHERE TABLE_NAME = 'producers';
+
+
+/* TSOHosts Symbolic Link to get Composer to run latest version of PHP */
+ln -s /usr/bin/php-5.6-cli php
+/usr/bin/php-5.6-cli
+php /C/ProgramData/ComposerSetup/bin/composer dump-autoload
+C:\PHP\php C:\ProgramData\ComposerSetup\bin\composer.phar dump-autoload
+
+Project Directory
+/c/LaravelDSProjects/DS5.1
+
+
+php artisan migrate
+
+php artisan migrate:rollback
+
+php artisan migrate:reset
+
+php artisan migrate:refresh --seed
+
+php artisan make:migration create_roles_table --create=roles
+
+php artisan make:migration add_role_to_users_table --table=users
+
+php artisan make:migration create_certbody_table --create=certbody
+
+php artisan make:migration create_producer_table --create=producer
+
+php artisan make:migration add_subcatg_fk_products_table --table=products
+
+php artisan make:migration create_invitations_table --create=invitations
+
+php artisan make:migration add_cert_body_to_users_table --table=users
+
+php artisan make:model 
+
+
+php artisan make:request ProducerStoreRequest
+
+
+http://placehold.it/1140x760
+
+
+Artisan on TSOHost
+--------------------
+/usr/bin/php-5.6-cli artisan migrate:refresh --env=development --seed 
+
+/usr/bin/php-5.6-cli artisan env
+
+/usr/bin/php-5.6-cli artisan up
+
+[PDOException] SQLSTATE[HY000] [2002] No such file or directory

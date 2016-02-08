@@ -1,0 +1,107 @@
+/* PASSPHRASE */
+passphrase requested for each interaction with gitHub.
+[from my PC passphrase for SSH keypair = 2014Gartan991960]
+[from TSOHosts passphrase for SSH keypair = 2015OrganicSecure]
+
+git push git@github.com:DirectSponsor/DS2016.git 01-New-Start
+git pull git@github.com:DirectSponsor/DS2016.git 01-New-Start
+
+/* Local IOFGA Folder */
+/c/DS2016
+
+/* iofga repository */
+git push git@github.com:DirectSponsor/DS2016.git production
+
+/* Windows Flush DNS after hosts change */
+ipconfig /flushdns
+
+/* IOFGA Repository */
+git push git@github.com:DirectSponsor/DS2016.git production
+
+/* Local drive dir */
+/c/directoryProject/OrganicDir
+
+SSH Server: 	shell.gridhost.co.uk
+SSH Username: 	organicf2
+SSH Password: 	6lf958eqx6jrw74m
+
+/* Clone the Repository */ 
+git clone git@github.com:McGarryIT/OrganicDir.git .
+
+/* Clone to remote server TsoHost - via SSH Terminal */
+git init .
+git remote add -t \* -f origin git@github.com:McGarryIT/OrganicDir.git
+git checkout master
+
+/* Composer UPdates */
+[Needed to install composer on cloud server - using command ->   curl -s http://getcomposer.org/installer | php-5.3  <-- ]
+/usr/bin/php-5.6 composer.phar install			/* Install application dependencies */
+/usr/bin/php-5.6 composer.phar update			/* Update application dependencies */
+ 
+ /* Laravel needed artisan key:generate */
+/usr/bin/php-5.6 artisan key:generate 
+gL4MWrAcHvOzqTC6ZG9FZ4CYTxRkwA0Y
+
+/* gitHub branch current */
+git@github.com:McGarryIT/OrganicDir.git
+
+/* List git config settings */
+git config -l
+
+/* check remote repo settings */
+git remote -v
+
+/* push branch to remote repo */
+git push git@github.com:McGarryIT/OrganicDir.git 2015-01-START
+
+
+
+/* fetch remote updates */
+git fetch git@github.com:McGarryIT/OrganicDir.git 2015-01-START
+git merge git@github.com:McGarryIT/OrganicDir.git/2015-01-START 2015-01-START
+
+git pull git@github.com:McGarryIT/OrganicDir.git 2015-01-START
+
+....once remote added as origin to config .....
+git merge origin/2015-01-START
+
+
+
+/* Other Useful Commands */
+To stop tracking a file you need to remove it from the index. This can be achieved with this command.
+
+git rm --cached <file>
+
+
+git rm --cached mylogfile.log
+
+For a directory:
+
+git rm --cached -r mydirectory
+
+
+/* Add remote to config */
+git remote add origin git@github.com:McGarryIT/OrganicDir.git
+
+
+
+If you want to revert changes made to your working copy, do this:
+
+git checkout .
+
+If you want to revert changes made to the index (i.e., that you have added), do this. Warning this will reset all of your unpushed commits to master!:
+
+git reset
+
+If you want to revert a change that you have committed, do this:
+
+git revert ...
+
+If you want to remove untracked files (e.g., new files, generated files):
+
+git clean -f 
+
+Or untracked directories:
+
+git clean -d
+
