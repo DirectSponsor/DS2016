@@ -55,7 +55,7 @@ return [
         'mysql' => [
             'driver'    => 'mysql',
 			'host'      => 'localhost',
-			'database'  => 'directsponsor_accounts',
+			'database'  => 'ds_accounts',
 			'username'  => 'root',
 			'password'  => '2014Gartan991960',
 //			'username'  => 'root',

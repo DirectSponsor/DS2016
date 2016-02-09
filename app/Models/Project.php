@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\DirectSponsorBaseModel;
-use App\Models\Role;
+use App\Models\UserRole;
 use App\Models\ProjectMember;
 use App\Models\SponsoredRecipient;
 
@@ -23,11 +23,21 @@ class Project extends DirectSponsorBaseModel {
 
     protected $fillable = array('name','content','max_recipients','max_sponsors_per_recipient','currency','amount','euro_amount','gf_commission');
 
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'created_at',
+        'updated_at'
+    ];
+
     /*
      * Relationships
      */
 
-    public function members() {
+    public function projectMembers() {
         return $this->hasMany('App\Models\ProjectMember');
     }
 
@@ -42,68 +52,49 @@ class Project extends DirectSponsorBaseModel {
     /*
      * Derived Relationships
      */
-
     public function coordinator() {
-        $coordinator = $this->members
-                ->join('roles', 'project_members.role_id', '=', 'roles.id')
-                ->where('roles.desciptor', '=', 'Coordinator')
+        $coordinator = $this->projectMembers()
+                ->join('user_roles', 'project_members.user_roles_id', '=', 'user_roles.id')
+                ->where('user_roles.role_type', '=', 'Coordinator')
                 ->first();
         return $coordinator;
     }
 
     public function recipients() {
-        $recipients = $this->members
-                ->join('roles', 'project_members.role_id', '=', 'roles.id')
-                ->where('roles.desciptor', '=', 'Recipient')
+        $recipients = $this->projectMembers()
+                ->join('user_roles', 'project_members.user_roles_id', '=', 'user_roles.id')
+                ->where('user_roles.role_type', '=', 'Recipient')
                 ->get();
         return $recipients;
     }
 
     public function sponsors() {
-        $sponsors = $this->members
-                ->join('roles', 'project_members.role_id', '=', 'roles.id')
-                ->where('roles.desciptor', '=', 'Sponsor')
+        $sponsors = $this->projectMembers()
+                ->join('user_roles', 'project_members.user_roles_id', '=', 'user_roles.id')
+                ->where('user_roles.role_type', '=', 'Sponsor')
                 ->get();
         return $sponsors;
     }
 
     public function payments() {
-        $payments = $this->transactions->whereHas('transtype', function ($query) {
-            $query->where('descriptor', '=', 'Payment');
-        })->get();
+        $payments = $this->transactions()
+                ->where('trans_type', 'Receipt')
+                ->get();
         return $payments;
     }
 
     public function fundReceipts() {
-        $receipts = $this->transactions->whereHas('transtype', function ($query) {
-            $query->where('descriptor', '=', 'Receipt Fund');
-        })->get();
+        $receipts = $this->transactions()
+                ->where('trans_type', 'Fund Receipt')
+                ->get();
         return $receipts;
     }
 
     public function spends() {
-        $spends = $this->transactions->whereHas('transtype', function ($query) {
-            $query->where('descriptor', '=', 'Spend Fund');
-        })->get();
+        $spends = $this->transactions()
+                ->where('trans_type', 'Fund Expense')
+                ->get();
         return $spends;
-    }
-
-    public function paymentsOfSponsor($sid){
-        return $this->sponsors()->where('user_id', $sid)->paymentsOfProject($this->id);
-    }
-
-    public function recipientOfSponsor($sid){
-        return $this->sponsors()->where('sponsor_id', $sid)->first()->recipientOfProject($this->id);
-    }
-
-    public function confirmedPaymentsOfSponsor($sid){
-        return $this->paymentsOfSponsor($sid)->where('stat','like','accepted%');
-    }
-
-    public function confirmedRecipients() {
-        return $this->recipients()
-                ->where('confirmed', 1)
-                ->count();
     }
 
     /**
@@ -120,11 +111,11 @@ class Project extends DirectSponsorBaseModel {
                 continue;
             }
             $sumPromises = SponsoredRecipient::where('recipient_member_id', '=', $recipient->id)
-                    ->sum('promised_amount');
+                    ->sum('euro_amount_promised');
             if ($sumPromises <= 0) {
                 return $recipient;
             }
-            if (($sumPromises < $this->max_amount_per_recipient) and
+            if (($sumPromises < $this->max_euro_amount_per_recipient) and
                 ($sumPromises < $selectedRecipient_sumPromises)) {
                 $selectedRecipient = $recipient;
                 $selectedRecipient_sumPromises = $sumPromises;
@@ -144,7 +135,7 @@ class Project extends DirectSponsorBaseModel {
         }
         $countConfirmedRecipients = 0;
         foreach ($this->recipients as $recipient){
-            if(!$recipient->user->confirmed){
+            if(!$recipient->userRole->user->registered){
                 continue;
             }
             $countConfirmedRecipients++;
@@ -161,76 +152,24 @@ class Project extends DirectSponsorBaseModel {
      * @param Request $request
      * @return \App\Models\Project
      */
-    public function validateCreateProjectData(Request $request) {
-        /*
-         * Validate request inputs
-         */
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|unique:projects',
-            'max_recipients' => 'required|numeric',
-            'max_sponsors_per_recipient' => 'required|numeric',
-            'max_recipients_per_sponsor' => 'required|numeric',
-            'currency' => 'required',
-            'amount' => 'required|numeric',
-            'euro_amount' => 'required|numeric',
-            'recipient_amount_local_currency' => 'required|numeric'
-        ]);
-
-        if ($validator->fails()) {
-            return $validator;
-        } else {
-            return $this;
-        }
-    }
-
-    /**
-     *
-     * @param Request $request
-     * @return \App\Models\Project
-     */
-    public function setupProject(Request $request) {
+    public function saveProject(Request $request) {
         DB::transaction(function() use($request) {
-            $user = new User;
-            $user->createNewUser($request->all(), 'Coordinator');
-            $coordinator = new Coordinator();
-            $coordinator->user()->associate($user);
-
             $this->fill($request->all());
             $this->url = str_replace(" ", "_", strtolower(e($request->input('name'))));
-            $this->open = true;
+            if (!isset($this->status)) {
+                $this->status = 'Building Budget';
+            }
             $this->save();
-
-            $coordinator->project()->associate($this);
-            $coordinator->save();
         });
         return $this;
     }
 
-    public function validateEditProjectData(Request $request) {
-        /*
-         * Validate request inputs
-         */
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|unique:projects,id,'.$this->id,
-            'max_recipients' => 'required|numeric',
-            'max_sponsors_per_recipient' => 'required|numeric',
-            'max_recipients_per_sponsor' => 'required|numeric',
-            'currency' => 'required',
-            'amount' => 'required|numeric',
-            'euro_amount' => 'required|numeric',
-            'recipient_amount_local_currency' => 'required|numeric'
-            ]);
+    public function addMemberToProject(UserRole $userRole) {
+        $projectMember = new ProjectMember;
+        $projectMember->user_role_id = $userRole->id;
+        $projectMember->member_status = 'Active';
+        $this->projectMembers()->associate($projectMember);
 
-        if ($validator->fails()) {
-            return $validator;
-        } else {
-            return $this;
-        }
-    }
-
-    public function updateProject(Request $request) {
-        $this->fill($request->all());
-        $this->url = str_replace(" ", "_", strtolower(e($this->name)));
         $this->save();
         return $this;
     }

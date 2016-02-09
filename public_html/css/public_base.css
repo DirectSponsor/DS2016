@@ -1,0 +1,148 @@
+/**
+ * This file is part of Organic Directory Application
+ *
+ * @copyright Copyright (c) 2016 McGarryIT
+ * @link      (http://www.mcgarryit.com)
+ */
+/*
+    Created on : 30-Nov-2015, 21:02:31
+    Author     : Paul
+*/
+@-moz-document url-prefix() {
+    img{
+        width: 100%;
+        max-width: 100%;
+    }
+}
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+     img{
+        max-width: 100%;
+    }
+}
+@media (max-width: 479px) {
+   h1, .lead {
+      font-size: 1.21em;
+   }
+   input, label {
+      font-size: 0.912em;
+   }
+   table > * {
+      font-size: 0.80em;
+   }
+}
+@media (min-width: 480px) and (max-width: 768px) {
+   h1, .lead {
+      font-size: 1.21em;
+   }
+   input.form-control, label.control-label, select.form-control, textArea.form-control {
+      font-size: 0.80em;
+   }
+   table > * {
+      font-size: 0.85em;
+   }
+}
+@media (min-width: 769px) and (max-width: 991px) {
+   h1, .lead {
+      font-size: 1.21em;
+   }
+   input.form-control, label.control-label, select.form-control, textArea.form-control {
+      font-size: 0.80em;
+   }
+   table > * {
+      font-size: 0.85em;
+   }
+}
+@media (min-width: 992px) {
+}
+.text-break {
+    white-space: normal;
+}
+html, body {
+    height: 100%;
+}
+.center {
+     float: none;
+     margin-left: auto;
+     margin-right: auto;
+}
+#page_container {
+    min-height: 90%;
+    margin-top: 100px;
+}
+.navbar-header > a > img {
+    display: inline;
+}
+.horizontal {
+    display: inline; border-left: 1px solid; padding-left: 0.3em;
+}
+.vertical-center {
+  min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+  min-height: 100vh; /* These two lines are counted as one :-)       */
+
+  display: flex;
+  align-items: center;
+}
+.marginTop {
+    margin-top: 2%;
+}
+@-moz-document url-prefix() {
+  fieldset { display: table-cell; }
+}
+.blackBG {
+    background: #000;
+}
+#admin_dir_list.dataTable.stripe tbody tr.odd, #admin_dir_list.dataTable.display tbody tr.odd {
+    background-color: #a9a9a9;
+}
+#admin_dir_list.dataTable.display tbody tr.odd > .sorting_1, #admin_dir_list.dataTable.order-column.stripe tbody tr.odd > .sorting_1 {
+    background-color: #a9a9a9;
+}
+#admin_dir_list.dataTable.display tbody tr.even > .sorting_1, #admin_dir_list.dataTable.order-column.stripe tbody tr.even > .sorting_1 {
+    background-color: #fff;
+}
+.nested-table-transparent {
+    background: none;
+}
+table.nested-table-transparent tbody tr {
+    background: none;
+}
+.btn-round {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.btn-round.btn-lg {
+    width: 48px;
+    height: 48px;
+}
+
+.btn-round.btn-sm {
+    width: 34px;
+    height: 34px;
+}
+
+.btn-round.btn-xs {
+    width: 24px;
+    height: 24px;
+}
+hr {
+    border: solid 1px #3c763d;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding : 0px;
+    margin-left: 0px;
+    display: inline;
+    border: 0px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    border: 0px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    border: 0px;
+}
+.img-responsive {width: 100%;}
+.values__datepicker {
+  position: relative;
+}

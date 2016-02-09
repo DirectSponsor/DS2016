@@ -36,7 +36,7 @@ class User extends DirectSponsorBaseModel implements AuthenticatableContract,
      *
      * @var array
      */
-    protected $fillable = array('name', 'email', 'skrill_acc', 'username', 'password');
+    protected $fillable = array('name', 'email', 'skrill_acc', 'registered', 'password');
 
     /**
      * The attributes excluded from the model's JSON form.
@@ -64,19 +64,15 @@ class User extends DirectSponsorBaseModel implements AuthenticatableContract,
         parent::__construct();
     }
 
-    public function setFillable($fields) {
-        $this->fillable = $fields;
-    }
-
     /*
      * Direct Relationships
      */
-    public function roles() {
+    public function userRoles() {
         return $this->hasMany('App\Models\UserRole', 'user_roles');
     }
 
     public function projectMemberships() {
-        return $this->hasMany('App\Models\ProjectMember', 'project_members');
+        return $this->hasManyThrough('App\Models\ProjectMember', 'App\UserRole');
     }
 
     /*
@@ -84,14 +80,14 @@ class User extends DirectSponsorBaseModel implements AuthenticatableContract,
      */
     private function getRolesList() {
         $roleList = array();
-        foreach($this->roles as $userRole) {
-            $roleList[] = $userRole->role->descriptor;
+        foreach($this->userRoles as $userRole) {
+            $roleList[] = $userRole->role_type;
         }
         return $roleList;
     }
 
     public function hasMultipleRoles() {
-        if ($this->roles()->count() > 1) {
+        if ($this->userRoles()->count() > 1) {
             return true;
         } else {
             return false;

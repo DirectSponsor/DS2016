@@ -4,8 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Contracts\Auth\Access\Gate as GateContract;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use App\Models\Certbody;
-use App\Models\Producer;
+use app\Models\Transaction;
+use App\Models\Project;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -28,38 +28,47 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies($gate);
 
-        $gate->define('update-producer', function ($user, $producerId) {
-            if ($user->isSiteAdmin()) {
-                return true;
-            }
-            $producer = Producer::find($producerId);
-            if (!$producer) {
-                return false;
-            }
-            if ($producer->producer_user_id == $user->id) {
-                return true;
-            }
-            if ($producer->certbody_id == $user->certbody_id) {
-                return true;
-            }
-            return false;
-        });
-
-        $gate->define('add-certbody', function ($user) {
+        $gate->define('create-project', function ($user) {
             if ($user->isSiteAdmin()) {
                 return true;
             }
             return false;
         });
 
-        $gate->define('update-certbody', function ($user, Certbody $certbody) {
+        $gate->define('update-project', function ($user, $projectId) {
             if ($user->isSiteAdmin()) {
                 return true;
             }
-            if (!$user->isCertbodyAdmin()) {
+            $project = Project::find($projectId);
+            if (!$project) {
                 return false;
             }
-            if ($certbody->id == $user->certbody_id) {
+            $coordinator = $project->coordinator();
+            if (!$coordinator) {
+                return false;
+            }
+            if ($coordinator->userRole->user_id == $user->id) {
+                return true;
+            }
+            return false;
+        });
+
+        $gate->define('update-transaction', function ($user, $transactionId) {
+            if ($user->isSiteAdmin()) {
+                return true;
+            }
+            $transaction = Transaction::find($transactionId);
+            if (!$transaction) {
+                return false;
+            }
+            if ($transaction->projectMember->userRole->user_id == $user->id) {
+                return true;
+            }
+            $coordinator = $transaction->project()->coordinator();
+            if (!$coordinator) {
+                return false;
+            }
+            if ($coordinator->userRole->user_id == $user->id) {
                 return true;
             }
             return false;
