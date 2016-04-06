@@ -8,12 +8,15 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Database\Eloquent\Collection;
 
 use App\Models\DirectSponsorBaseModel;
 use App\Models\Role;
-use app\Models\UserRole;
+use App\Models\UserRole;
+use App\Models\Project;
 use App\Models\Invitation;
-use app\Models\ProjectMember;
+use App\Models\ProjectMember;
+use App\Models\SponsorMember;
 use App\Models\Transaction;
 use App\Models\MailerDS as Mailer;
 
@@ -54,25 +57,19 @@ class User extends DirectSponsorBaseModel implements AuthenticatableContract,
 
     protected $hashService;
 
-    public static $rules = array(
-        'username' => 'required|unique:users',
-        'email' => 'required|email|unique:users',
-        'password' => 'required|min:6|confirmed'
-    );
-
-    public function __construct() {
-        parent::__construct();
+    public function __construct($attributes = array()) {
+        parent::__construct($attributes);
     }
 
     /*
      * Direct Relationships
      */
     public function userRoles() {
-        return $this->hasMany('App\Models\UserRole', 'user_roles');
+        return $this->hasMany('App\Models\UserRole', 'user_id');
     }
 
     public function projectMemberships() {
-        return $this->hasManyThrough('App\Models\ProjectMember', 'App\UserRole');
+        return $this->hasManyThrough('App\Models\ProjectMember', 'App\Models\UserRole', 'user_id', 'user_role_id');
     }
 
     /*
@@ -121,32 +118,65 @@ class User extends DirectSponsorBaseModel implements AuthenticatableContract,
         }
     }
 
+    public function isSponsor() {
+        $roleList = $this->getRolesList();
+        if (in_array('Sponsor', $roleList)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function getSponsorRole() {
+        foreach($this->userRoles as $userRole) {
+            if ($userRole->role_type == 'Sponsor') {
+                return $userRole;
+            }
+        }
+        return false;
+    }
+
     public function getProjectMember($project_id) {
         $projectMember = $this->projectMemberships()
                 ->where('project_id', '=', $project_id)
                 ->first();
 
         if ($projectMember) {
-            return $projectMember;
+            return $projectMember->castMemberRole();
         } else {
             return false;
         }
     }
 
-    public function isSponsorOfProject($project_id) {
+    public function isSponsorOfProject($projectId) {
         $projectMemberships = $this->projectMemberships()
-                ->where('project_id', '=', $project_id)
+                ->where('project_id', '=', $projectId)
                 ->get();
 
         if ($projectMemberships) {
             foreach($projectMemberships as $projectMember) {
-                if ($projectMember->role->descriptor == 'Sponsor') {
-                    return $projectMember;
+                if ($projectMember->userRole->role_type == 'Sponsor') {
+                    return $projectMember->castMemberRole();
                 }
             }
-        } else {
-            return false;
         }
+        return false;
+    }
+
+    public function getProjects() {
+        $projectsCollection = new Collection;
+        if ($this->isAdministrator() or $this->isSponsor()) {
+            return Project::all();
+        }
+        if ($this->projectMemberships()->count() > 0) {
+            $projectsCollection = new Collection;
+            foreach($this->projectMemberships as $projectMember) {
+                if (!$projectsCollection->has($projectMember->project_id)) {
+                    $projectsCollection->add($projectMember->project);
+                }
+            }
+        }
+        return $projectsCollection;
     }
 
     public function isValidSponsorOfProject($project_id) {
@@ -247,25 +277,10 @@ class User extends DirectSponsorBaseModel implements AuthenticatableContract,
         return $this;
     }
 
-    private function createUserRole(User $user, Role $role) {
+    public function createUserRole($role) {
         $userRole = new UserRole;
-        $userRole->user()->associate($user);
-        $userRole->role()->associate($role);
-        $userRole->save();
-    }
-
-    public function confirmAndCompleteSetup($project_id=0) {
-        DB::transaction(function() {
-            $this->confirmed = true;
-            $this->save();
-
-            $projectMember = $this->memberships()->first();
-            if ($projectMember->isSponsorRole()) {
-                $payment = new Transaction;
-                $recipient = $projectMember->sponsoredRecipients()->first();
-                $payment->initialiseFirstSponsorProjectPayment($projectMember, $recipient);
-            }
-        });
+        $userRole->role_type = $role;
+        $this->userRoles()->save($userRole);
         return $this;
     }
 

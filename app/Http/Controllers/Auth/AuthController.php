@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Models\User;
 use Validator;
+use Illuminate\Http\Request;
+use App\Process\Registration\Manager as Registration;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 
@@ -24,7 +26,7 @@ class AuthController extends Controller
 
     use AuthenticatesAndRegistersUsers, ThrottlesLogins;
 
-    protected $redirectPath = '/panel';
+    public $redirectPath = '/projects';
 
     /**
      * Create a new authentication controller instance.
@@ -57,8 +59,32 @@ class AuthController extends Controller
         return Validator::make($data, [
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
+            'skrill_acc' => 'required|email|max:255|unique:users',
             'password' => 'required|confirmed|min:6',
+            'encryptedString' => 'min:1'
         ]);
+    }
+
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function postRegister(Request $request)
+    {
+        $validator = $this->validator($request->all());
+
+        if ($validator->fails()) {
+            $this->throwValidationException(
+                $request, $validator
+            );
+        }
+
+        $newUser = $this->create($request, $request->all());
+        $request->session()->flash('notification', $newUser->name . ', your new User has been created. Please check your email, to confirm email address?');
+
+        return redirect("/");
     }
 
     /**
@@ -67,13 +93,14 @@ class AuthController extends Controller
      * @param  array  $data
      * @return User
      */
-    protected function create(array $data)
+    protected function create(Request $request, array $data)
     {
-        $result = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password'])
-        ]);
-        return $result;
+        $registrationManager = new Registration();
+        if ($request->is('*sponsor*')) {
+            $userNew = $registrationManager->registerSponsor($data);
+        } else {
+            $userNew = $registrationManager->registerMember($data);
+        }
+        return $userNew;
     }
 }

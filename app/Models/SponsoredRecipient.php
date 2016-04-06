@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\DirectSponsorBaseModel;
-use App\Models\Role;
-use App\Models\Invitation;
-use App\Models\MailerDS as Mailer;
+use App\Models\SponsorMember;
+use App\Models\RecipientMember;
+use App\Models\ProjectMember;
 
 
 class SponsoredRecipient extends DirectSponsorBaseModel
@@ -43,6 +43,45 @@ class SponsoredRecipient extends DirectSponsorBaseModel
         return $this->belongsTo('App\Models\ProjectMember');
     }
 
+    /*
+     * Sponsored Recipient Methods
+     */
+
+    /**
+     *
+     * @param SponsorMember $sponsor
+     * @param RecipientMember $recipient
+     * @param type $amount_promised_euro
+     * @return \app\Models\SponsoredRecipient
+     */
+    public function initialiseNew(SponsorMember $sponsor, ProjectMember $recipient, $amount_promised_euro) {
+        $this->project_member_id = $sponsor->id;
+        $this->recipient_member_id = $recipient->id;
+        $this->status = 'Active';
+        $this->euro_amount_promised = $amount_promised_euro;
+        $this->setNextPaymentDueFromSponsor();
+        return $this;
+    }
+
+    /**
+     *
+     * @return \app\Models\SponsoredRecipient
+     */
+    public function setNextPaymentDueFromSponsor() {
+        if (!isset($this->next_due)) {
+            $date = new Carbon();
+            $date->endOfMonth();
+            $this->next_due = $date;
+        } else {
+            $this->next_due = $this->next_due->addDays(5)->endOfMonth();
+        }
+        return $this;
+    }
+
+    /**
+     *
+     * @return string $next_due date
+     */
     public function getNextPaymentDueFromSponsor() {
         if ($this->next_due->diffInYears() > 50) { /* Checks for no date set in next_pay */
             return '';
@@ -51,14 +90,4 @@ class SponsoredRecipient extends DirectSponsorBaseModel
         }
     }
 
-    public function setNextPaymentDueFromSponsor() {
-        if (!isset($this->next_due)) {
-            $date = new Carbon();
-            $date->endOfMonth();
-            $this->next_due = $date;
-        } else {
-            $this->next_due->addDays(5)->endOfMonth();
-        }
-        return $this;
-    }
 }

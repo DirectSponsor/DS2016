@@ -4,39 +4,55 @@
   @copyright Copyright (c) 2016 McGarryIT
   @link      (http://www.mcgarryit.com)
  -->
-@extends('default.welcome')
+@extends('layouts.base_admin')
 
 @section('content')
-    <div class="container-fluid col-xs-12 left text-center">
+    <div class="container-fluid text-center">
         <h1>Welcome to <strong>Organic Food Sales Ireland</strong></h1>
     </div>
-    <div class="container-fluid col-xs-8 col-xs-offset-4">
-        <form method="POST" action="/auth/register">
+    <div class="container-fluid">
+        <form method="POST" 
+              @if(Request::is('*sponsor*'))
+                action="/register/sponsor"
+              @else
+                action="/register/member"
+              @endif
+                >
             {!! csrf_field() !!}
             <input type="hidden" name="encryptedString" value="{{ $encryptedString }}">
 
             <div class="col-xs-12">
-                <label class="col-xs-6 col-md-4 right text-right" for="name">Name</label>
-                <input class="col-xs-6 col-md-2 left" type="text" name="name" value="{{ old('name') }}">
+                @include('elements.input', element::inputDefaults(['value' => old('name', null),
+                    'name' => 'name', 'label' => 'Name :', 'type' => 'text',
+                    'class' => 'col-xs-6 col-md-2 left', 'classlabel' => 'col-xs-6 col-md-4 right text-right']))
             </div>
 
             <div class="col-xs-12">
-                <label class="col-xs-6 col-md-4 right text-right" for="email">Email</label>
-                <input class="col-xs-6 col-md-2 left" type="email" name="email" value="{{ old('email') }}">
+                @include('elements.input', element::inputDefaults(['value' => old('email', null),
+                    'name' => 'email', 'label' => 'Email :', 'type' => 'email',
+                    'class' => 'col-xs-6 col-md-2 left', 'classlabel' => 'col-xs-6 col-md-4 right text-right']))
             </div>
 
             <div class="col-xs-12">
-                <label class="col-xs-6 col-md-4 right text-right" for="password">Password</label>
-                <input class="col-xs-6 col-md-2 left" type="password" name="password" id="password">
+                @include('elements.input', element::inputDefaults(['value' => old('skrill_acc', null),
+                    'name' => 'skrill_acc', 'label' => 'Skrill Account :', 'type' => 'email',
+                    'class' => 'col-xs-6 col-md-2', 'classlabel' => 'col-xs-6 col-md-4 right text-right']))
             </div>
 
             <div class="col-xs-12">
-                <label class="col-xs-6 col-md-4 right text-right" for="password_confirmation">Confirm Password</label>
-                <input class="col-xs-6 col-md-2 left" type="password" name="password_confirmation" id="password_confirmation">
+                @include('elements.input', element::inputDefaults(['value' => old('password', null),
+                    'name' => 'password', 'label' => 'Password :', 'type' => 'password',
+                    'class' => 'col-xs-6 col-md-2', 'classlabel' => 'col-xs-6 col-md-4 right text-right']))
+            </div>
+
+            <div class="col-xs-12">
+                @include('elements.input', element::inputDefaults(['value' => old('password_confirmation', null),
+                    'name' => 'password_confirmation', 'label' => 'Confirm Password :', 'type' => 'password',
+                    'class' => 'col-xs-6 col-md-2', 'classlabel' => 'col-xs-6 col-md-4 right text-right']))
             </div>
 
             <div class="col-xs-6 col-md-4 right text-right">
-                <button class="btn btn-success" type="submit">Register</button>
+                <button class="btn btn-primary" type="submit">Register</button>
             </div>
         </form>
     </div>

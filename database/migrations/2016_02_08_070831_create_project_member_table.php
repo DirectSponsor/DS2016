@@ -23,7 +23,7 @@ class CreateProjectMemberTable extends Migration
             $table->foreign('project_id')->references('id')->on('project');
             $table->foreign('user_role_id')->references('id')->on('user_roles');
 
-            $table->unique('project_id', 'user_role_id');
+            $table->unique(['project_id', 'user_role_id']);
         });
     }
 

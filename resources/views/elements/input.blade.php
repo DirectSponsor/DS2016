@@ -7,7 +7,7 @@
 
 
 @if ($label == true)
-    <label for="{{ $name }}" class="control-label pull-left {{ $classlabel or "noclasslabel" }}">{{ $label }}</label>
+    <label for="{{ $name }}" class="control-label pull-left {{ $classlabel or "noclasslabel" }}">{!! $label !!}</label>
 @endif
 
 @if ($readonly == true)
@@ -16,15 +16,27 @@
            />
 @else
     <input name="{{ $name }}" id="{{ $name }}" type="{{ $type }}" value="{{ $value }}" class="{{ $class }}" placeholder="{{ $placeholders[$name] or '' }}"
+        @if(isset($onkeyup)) onkeyup="{{ $onkeyup }}" @endif
         @if(isset($checked)) checked='' @endif
         @if($type=='date') data-provide="datepicker-inline" @endif
+        @if(isset($dataList)) list="{{ $name.'list' }}" @endif
     />
+
+    @if(isset($dataList))
+        <datalist id="{{ $name.'list' }}">
+
+        @foreach($dataList as $option)
+            <option value="{{ $option }}">
+        @endforeach
+
+        </datalist>
+    @endif
 
     @if ($errors->first($name) !== '')
         <p class="text-danger">{{ $errors->first($name) }}</p>
     @endif
 @endif
 @if ($label == true)
-<br>
+
 @endif
 

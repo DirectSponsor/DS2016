@@ -17,15 +17,15 @@ class CreateSponsoredRecipientTable extends Migration
             $table->integer('project_member_id')->unsigned();
             $table->integer('recipient_member_id')->unsigned();
             $table->enum('status', ['Active', 'Suspended', 'Cancelled'])->default('Active');
-            $table->date('next_due');
-            $table->decimal('euro_amount_promised', 5, 2);
+            $table->timestamp('next_due');
+            $table->decimal('euro_amount_promised', 9, 2);
             $table->integer('updated_by')->unsigned();
             $table->timestamps();
 
             $table->foreign('project_member_id')->references('id')->on('project_member');
             $table->foreign('recipient_member_id')->references('id')->on('project_member');
 
-            $table->unique('project_member_id', 'recipient_member_id');
+            $table->unique(['project_member_id', 'recipient_member_id']);
             $table->index('status');
         });
     }

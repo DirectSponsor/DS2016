@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-
 use App\Models\DirectSponsorBaseModel;
 use App\Models\MailerDS as Mailer;
+use App\Models\CoordinatorMember;
+
 
 class Invitation extends DirectSponsorBaseModel
 {
@@ -17,11 +16,11 @@ class Invitation extends DirectSponsorBaseModel
      *
      * @var string
      */
-    protected $table = 'invitations';
+    protected $table = 'invitation';
 
     protected $guarded = array();
 
-    protected $fillable = array('sent_to');
+    protected $fillable = array('email', 'role_type', 'processed');
 
     protected $mailer;
 
@@ -29,33 +28,24 @@ class Invitation extends DirectSponsorBaseModel
         return $this->belongsTo("App\Models\Project");
     }
 
-    public function role() {
-        return $this->belongsTo("App\Models\Role");
-    }
-
-    public function validateRequest(Request $request) {
-        /*
-         * Validate request inputs
-         */
-        $validator = Validator::make($request->all(),
-            ['sent_to' => 'required|email']
-        );
-
-        if ($validator->fails()) {
-            return $validator;
-        } else {
-            return $this;
+    public function saveData(Request $request, $projectId) {
+        $project = Project::find($projectId);
+        if ($request->role_type === 'Coordinator') {
+            $coordinator = $project->getCoordinator(true);
+            if ($coordinator instanceof CoordinatorMember) {
+                $coordinator->status = 'Cancelled';
+                $coordinator->save();
+            }
         }
-    }
-
-    public function saveData(Request $request, $project) {
+        if ($project->isFullySupported()) {
+            abort("403", "The maximum number of recipients have already been assigned to this project");
+        }
         DB::transaction(function() use($request, $project) {
             $this->fill($request->all());
             /*
              * Link Project
              */
             $this->project()->associate($project);
-
             $this->save();
         });
         return $this;

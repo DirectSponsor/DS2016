@@ -32,7 +32,7 @@
 
                 <div class="row clearfix">
                     <div class="col-xs-12 col-md-12 form-group">
-                        <button class="btn btn-success pull-left" type="submit">Reset Password</button>
+                        <button class="btn btn-primary pull-left" type="submit">Reset Password</button>
                     </div>
                 </div>
 

@@ -16,15 +16,15 @@ class CreateInvitationTable extends Migration
             $table->increments('id');
             $table->integer('project_id')->unsigned();
             $table->string('email')->unique();
-            $table->integer('user_role_id')->unsigned();
+            $table->string('role_type', 50);
             $table->boolean('processed');
             $table->integer('updated_by')->unsigned();
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('project');
-            $table->foreign('user_role_id')->references('id')->on('user_roles');
 
             $table->index('processed');
+            $table->index('role_type');
         });
     }
 

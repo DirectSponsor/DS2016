@@ -45,7 +45,7 @@
 
                         <div class="row clearfix">
                             <div class="col-xs-12 col-md-8 form-group">
-                                <button class="btn btn-success pull-left" type="submit">Save</button>
+                                <button class="btn btn-primary pull-left" type="submit">Save</button>
                             </div>
                         </div>
                     {!! Form::close() !!}
@@ -82,7 +82,7 @@
                             @include('elements.input', element::inputDefaults(['value' => old('licence_no'), 'name' => 'licence_no', 'label' => $certbody->ocb_code, 'class' => 'col-md-3']) )
                         </div>
                         <div class="col-xs-12 form-group">
-                            <button class="btn btn-success text-break" type="submit">Add Producer Licence Number</button>
+                            <button class="btn btn-primary text-break" type="submit">Add Producer Licence Number</button>
                         </div>
                     {!! Form::close() !!}
                 </div>
@@ -100,7 +100,7 @@
                             @if($errors->has('licencenumbers')) {!!  $errors->first('licencenumbers','<p class="text-danger"> :message </p>')  !!} @endif
                         </div>
                          <div class="col-xs-12 form-group">
-                            <button class="btn btn-success" type="submit">Upload File</button>
+                            <button class="btn btn-primary" type="submit">Upload File</button>
                         </div>
                     {!! Form::close() !!}
                 </div>
@@ -141,7 +141,7 @@
                             @include('elements.input', element::inputDefaults(['value' => old('email'), 'name' => 'email', 'label' => 'Email :', 'class' => 'col-xs-8 col-md-6']) )
                         </div>
                         <div class="col-xs-12 form-group">
-                            <button class="btn btn-success" type="submit">Add Admin User</button>
+                            <button class="btn btn-primary" type="submit">Add Admin User</button>
                         </div>
                     {!! Form::close() !!}
                 </div>

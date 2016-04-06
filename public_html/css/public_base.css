@@ -13,6 +13,7 @@
         width: 100%;
         max-width: 100%;
     }
+    fieldset { display: table-cell; }
 }
 @media screen and (-webkit-min-device-pixel-ratio:0) {
      img{
@@ -24,7 +25,10 @@
       font-size: 1.21em;
    }
    input, label {
-      font-size: 0.912em;
+      font-size: 0.80em;
+   }
+   .dataTables_wrapper div.dataTables_filter input[type=search] {
+       width: 70%;
    }
    table > * {
       font-size: 0.80em;
@@ -69,8 +73,25 @@ html, body {
     min-height: 90%;
     margin-top: 100px;
 }
-.navbar-header > a > img {
-    display: inline;
+.navbar-brand {
+  padding: 0px; /* firefox bug fix */
+}
+.navbar-brand  img {
+  height: 100%;
+  padding: 0px; /* firefox bug fix */
+}
+#welcomeheader {
+    padding: 0px; /* firefox bug fix */
+    max-height: 100px;
+}
+#welcomeheader > img.img-responsive {
+    height: 100px;
+    padding: 0px; /* firefox bug fix */
+    display: block;
+    width: auto;
+}
+.img-responsive {
+    width: 100%;
 }
 .horizontal {
     display: inline; border-left: 1px solid; padding-left: 0.3em;
@@ -84,6 +105,15 @@ html, body {
 }
 .marginTop {
     margin-top: 2%;
+}
+.marginBot {
+    margin-bottom: 15px;
+}
+.marginLeftBtn {
+    margin-left: 15px;
+}
+.dt-buttons.btn-group > a.btn-default {
+    margin-right: 15px;
 }
 @-moz-document url-prefix() {
   fieldset { display: table-cell; }
@@ -142,7 +172,13 @@ hr {
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
     border: 0px;
 }
-.img-responsive {width: 100%;}
+/*.siteLogo {
+    padding-right: 1.5em;
+    padding-top: 0px;
+    all: initial!important;
+    width: 100%!important;
+    height: auto!important;
+}*/
 .values__datepicker {
   position: relative;
 }

@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace app\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\DirectSponsorBaseModel;
@@ -11,17 +12,26 @@ use App\Models\UserRole;
 use App\Models\ProjectMember;
 use App\Models\SponsoredRecipient;
 
+
 class Project extends DirectSponsorBaseModel {
     /**
      * The database table used by the model.
      *
      * @var string
      */
-    protected $table = 'projects';
+    protected $table = 'project';
 
     protected $guarded = array();
 
-    protected $fillable = array('name','content','max_recipients','max_sponsors_per_recipient','currency','amount','euro_amount','gf_commission');
+    protected $fillable = array(
+        'name','status','local_currency','local_currency_symbol','initial_target_budget',
+        'max_recipients', 'max_sponsors',
+        'currency_conversion_factor',
+        'min_local_amount_per_recipient','min_local_amount_retained_recipient',
+        'max_local_amount_per_recipient',
+        'min_euro_amount_per_recipient', 'max_euro_amount_per_recipient',
+        'description'
+        );
 
     /**
      * The attributes that should be mutated to dates.
@@ -41,8 +51,16 @@ class Project extends DirectSponsorBaseModel {
         return $this->hasMany('App\Models\ProjectMember');
     }
 
-    public function transactions() {
-        return $this->hasManyThrough('App\Models\Transaction', 'App\Models\ProjectMember');
+    public function coordinator() {
+        return $this->hasMany('App\Models\CoordinatorMember');
+    }
+
+    public function recipients() {
+        return $this->hasMany('App\Models\RecipientMember');
+    }
+
+    public function sponsors() {
+        return $this->hasMany('App\Models\SponsorMember');
     }
 
     public function invitations() {
@@ -50,51 +68,161 @@ class Project extends DirectSponsorBaseModel {
     }
 
     /*
+     * Override Setters
+     */
+    public function setMaxRecipientsAttribute($value) {
+        $this->attributes['max_recipients'] = floor($value);
+        return $this;
+    }
+
+    public function setMaxSponsorsAttribute($value) {
+        $this->attributes['max_sponsors'] = floor($value);
+        return $this;
+    }
+
+    /*
      * Derived Relationships
      */
-    public function coordinator() {
-        $coordinator = $this->projectMembers()
-                ->join('user_roles', 'project_members.user_roles_id', '=', 'user_roles.id')
-                ->where('user_roles.role_type', '=', 'Coordinator')
-                ->first();
-        return $coordinator;
+    public function getCoordinator($activeOnly=true) {
+        $collection = $this->coordinator;
+        $filteredCollection = $collection->filter( function($projectMember) use($activeOnly) {
+            if ($activeOnly and ($projectMember->isActive() == false)) {
+                return false;
+            }
+            if ($projectMember->userRole->isCoordinator()) {
+                return true;
+            }
+        });
+        if ($activeOnly) {
+            return $filteredCollection->first();
+        } else {
+            return $filteredCollection;
+        }
     }
 
-    public function recipients() {
-        $recipients = $this->projectMembers()
-                ->join('user_roles', 'project_members.user_roles_id', '=', 'user_roles.id')
-                ->where('user_roles.role_type', '=', 'Recipient')
-                ->get();
-        return $recipients;
+    public function getRecipients($activeOnly=true) {
+        $collection = $this->recipients;
+        $filteredCollection = $collection->filter( function($projectMember) use($activeOnly) {
+            if ($activeOnly and ($projectMember->isActive() == false)) {
+                return false;
+            }
+            if ($projectMember->userRole->isRecipient()) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+        return $filteredCollection;
     }
 
-    public function sponsors() {
-        $sponsors = $this->projectMembers()
-                ->join('user_roles', 'project_members.user_roles_id', '=', 'user_roles.id')
-                ->where('user_roles.role_type', '=', 'Sponsor')
-                ->get();
-        return $sponsors;
+    public function getSponsors($activeOnly=true) {
+        $collection = $this->sponsors;
+        $filteredCollection = $collection->filter( function($projectMember) use($activeOnly) {
+            if ($activeOnly and ($projectMember->isActive() == false)) {
+                return false;
+            }
+            if ($projectMember->userRole->isSponsor()) {
+                return true;
+            }
+        });
+        return $filteredCollection;
     }
 
-    public function payments() {
-        $payments = $this->transactions()
-                ->where('trans_type', 'Receipt')
-                ->get();
+    public function getPayments() {
+        $payments = new Collection();
+        foreach($this->getRecipients(false) as $recipient) {
+            foreach($recipient->receiptsConfirmed() as $receipt) {
+                $payments->add($receipt);
+            }
+        }
         return $payments;
     }
 
-    public function fundReceipts() {
-        $receipts = $this->transactions()
-                ->where('trans_type', 'Fund Receipt')
-                ->get();
+    public function getPaymentsDue() {
+        $payments = new Collection();
+        $coordinators = $this->getCoordinator(false);
+        if ($coordinators) {
+            foreach($coordinators as $coordinator) {
+                foreach($coordinator->receiptsDue() as $receipt) {
+                    $payments->add($receipt);
+                }
+            }
+        }
+        foreach($this->getRecipients(true) as $recipient) {
+            foreach($recipient->receiptsDue() as $receipt) {
+                $payments->add($receipt);
+            }
+        }
+        return $payments;
+    }
+
+    public function getFundReceipts() {
+        $receipts = new Collection();
+        foreach($this->getCoordinator(false) as $coordinator) {
+            foreach($coordinator->receipts as $receipt) {
+                $receipts->add($receipt);
+            }
+        }
         return $receipts;
     }
 
-    public function spends() {
-        $spends = $this->transactions()
-                ->where('trans_type', 'Fund Expense')
-                ->get();
-        return $spends;
+    public function getSpends() {
+        $expenses = new Collection();
+        foreach($this->getCoordinator(false) as $coordinator) {
+            foreach($coordinator->expenses as $expense) {
+                $expenses->add($expense);
+            }
+        }
+        return $expenses;
+    }
+
+    /*
+     * Project Methods
+     */
+
+    public function isMemberOfProject(UserRole $userRole) {
+        $members = $this->projectMembers()->filter( function($member) use($userRole) {
+            if ($member->userRole->id == $userRole->id) {
+                return $member;
+            }
+        });
+        if ($members->count() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function getMaxRecipients() {
+        if (is_numeric($this->max_recipients)) {
+            return $this->max_recipients;
+        } else {
+            return 0;
+        }
+    }
+
+    public function getMaxSponsors() {
+        if (is_numeric($this->max_sponsors)) {
+            return $this->max_sponsors;
+        } else {
+            return 0;
+        }
+    }
+
+    public function getMaxEuroAmountPerRecipient() {
+        if (is_numeric($this->max_euro_amount_per_recipient)) {
+            return $this->max_euro_amount_per_recipient;
+        } else {
+            return 0;
+        }
+    }
+
+    public function getMinEuroAmountPerRecipient() {
+        if (is_numeric($this->min_euro_amount_per_recipient)) {
+            return $this->min_euro_amount_per_recipient;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -147,31 +275,85 @@ class Project extends DirectSponsorBaseModel {
         }
     }
 
+    public function fillFromRequest(Request $request) {
+        $this->fill($request->all());
+        $this->url = str_replace(" ", "_", strtolower(e($request->input('name'))));
+        return $this;
+    }
+
     /**
      *
      * @param Request $request
      * @return \App\Models\Project
      */
-    public function saveProject(Request $request) {
-        DB::transaction(function() use($request) {
-            $this->fill($request->all());
-            $this->url = str_replace(" ", "_", strtolower(e($request->input('name'))));
+    public function save(array $options=array()) {
+        DB::transaction(function() use($options) {
             if (!isset($this->status)) {
                 $this->status = 'Building Budget';
             }
-            $this->save();
+            $this->calculateAmounts();
+            parent::save($options);
         });
+        return $this;
+    }
+
+    private function calculateAmounts() {
+        if (is_null($this->currency_conversion_factor)) {
+            $this->currency_conversion_factor = 0;
+        } elseif (!is_numeric($this->currency_conversion_factor)) {
+            $this->currency_conversion_factor = 0;
+        }
+
+        if (is_null($this->min_euro_amount_per_recipient)) {
+            $this->min_euro_amount_per_recipient = 0;
+        } elseif (!is_numeric($this->min_euro_amount_per_recipient)) {
+            $this->min_euro_amount_per_recipient = 0;
+        }
+
+        if (is_null($this->max_sponsors)) {
+            $this->max_sponsors = 0;
+        } elseif (!is_numeric($this->max_sponsors)) {
+            $this->max_sponsors = 0;
+        }
+
+        $this->max_euro_amount_per_recipient
+                = $this->min_euro_amount_per_recipient * (int) $this->max_sponsors;
+        $this->min_local_amount_per_recipient
+                = $this->min_euro_amount_per_recipient * $this->currency_conversion_factor;
+        $this->max_local_amount_per_recipient
+                = $this->max_euro_amount_per_recipient * $this->currency_conversion_factor;
+
         return $this;
     }
 
     public function addMemberToProject(UserRole $userRole) {
         $projectMember = new ProjectMember;
         $projectMember->user_role_id = $userRole->id;
-        $projectMember->member_status = 'Active';
-        $this->projectMembers()->associate($projectMember);
+        $projectMember->status = 'Active';
+        $this->projectMembers()->save($projectMember);
 
-        $this->save();
-        return $this;
+        return $projectMember->castMemberRole();
     }
 
+    public function isFullySupported() {
+        if (isset($this->isFullySupportedIndic)) {
+            return $this->isFullySupportedIndic;
+        }
+        $maxSupportAllowed = ($this->getMaxRecipients() * $this->getMaxEuroAmountPerRecipient());
+        $currentSupport = 0;
+        foreach($this->getSponsors(true) as $sponsorMember) {
+            $currentSupport += $sponsorMember->getCommittedTotal();
+        }
+        if ($currentSupport >= $maxSupportAllowed) {
+            $this->isFullySupportedIndic = true;
+        } else {
+            $diff = $maxSupportAllowed - $currentSupport;
+            if ($diff >= $this->getMinEuroAmountPerRecipient()) {
+                $this->isFullySupportedIndic = false;
+            } else {
+                $this->isFullySupportedIndic = true;
+            }
+        }
+        return $this->isFullySupportedIndic;
+    }
 }

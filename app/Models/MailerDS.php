@@ -28,8 +28,8 @@ class MailerDS
      */
     public function sendNewSponsorMail(User $sponsor) {
         $hash = Crypt::encrypt($sponsor->id);
-        $url = URL::route('sponsors.confirm',$hash);
-        Mail::send('emails.sponsors.newuser',
+        $url = URL::route('sponsor.confirm',$hash);
+        Mail::send('emails.sponsors.confirm',
                 array(
                     'name' => $sponsor->name,
                     'hash' => $hash
@@ -52,7 +52,7 @@ class MailerDS
     public function sendSponsorConfirmationMail(ProjectMember $sponsor, Project $project) {
         $recipient = $sponsor->recipients()->first();
         $hash = Crypt::encrypt($sponsor->user->id);
-        $url = URL::route('sponsors.confirm',$hash);
+        $url = URL::route('sponsor.confirm',$hash);
         Mail::send('emails.sponsors.confirmation',
                 array(
                     'name' => $sponsor->name,
@@ -97,12 +97,22 @@ class MailerDS
      * @return boolean
      */
     public function sendInvitation(Invitation $invitation) {
-        Mail::send('emails.recipients.invitation', array(
-                'name' => $invitation->project->name,
-                'id' => $invitation->id
-                ), function($message) use($invitation) {
-            $message->to($invitation->sent_to)->subject('Invitation to Direct Sponsor');
-        });
+        $hash = Crypt::encrypt($invitation->id);
+        if ($invitation->role_type == 'Recipient') {
+            Mail::send('emails.recipients.invitation', array(
+                    'name' => $invitation->project->name,
+                    'id' => $hash
+                    ), function($message) use($invitation) {
+                $message->to($invitation->email)->subject('Invitation to Direct Sponsor');
+            });
+        } else {
+            Mail::send('emails.coordinator.invitation', array(
+                    'name' => $invitation->project->name,
+                    'id' => $hash
+                    ), function($message) use($invitation) {
+                $message->to($invitation->email)->subject('Invitation to Direct Sponsor');
+            });
+        }
         return true;
     }
 
@@ -132,7 +142,7 @@ class MailerDS
      */
     public function sendRecipientConfirmationMail(User $user) {
         $hash = Crypt::encrypt($user->id);
-        $url = URL::route('recipients.confirm',$hash);
+        $url = route('recipient.confirm',['hash' => $hash]);
         Mail::send('emails.recipients.confirm', array(
             'name' => $user->name,
             'hash' => $hash

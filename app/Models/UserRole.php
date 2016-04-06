@@ -34,6 +34,31 @@ class UserRole extends DirectSponsorBaseModel
         return $this->belongsTo("App\Models\Role");
     }
 
+    public function isAdministrator() {
+        if ($this->role_type == "Administrator") {
+            return true;
+        }
+        return false;
+    }
+
+    public function isCoordinator() {
+        if ($this->role_type == "Coordinator") {
+            return true;
+        }
+        return false;
+    }
+    public function isRecipient() {
+        if ($this->role_type == "Recipient") {
+            return true;
+        }
+        return false;
+    }
+    public function isSponsor() {
+        if ($this->role_type == "Sponsor") {
+            return true;
+        }
+        return false;
+    }
     /*
      * Update Methods
      */

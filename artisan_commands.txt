@@ -9,7 +9,7 @@ php /C/ProgramData/ComposerSetup/bin/composer dump-autoload
 C:\PHP\php C:\ProgramData\ComposerSetup\bin\composer.phar dump-autoload
 
 Project Directory
-/c/LaravelDSProjects/DS5.1
+/c/DS2016
 
 
 php artisan migrate
@@ -21,6 +21,16 @@ php artisan migrate:reset
 php artisan migrate:refresh --seed
 
 php artisan make:migration create_roles_table --create=roles
+
+php artisan make:migration create_project_table --create=project
+
+php artisan make:migration create_project_member_table --create=project_member
+
+php artisan make:migration create_invitation_table --create=invitation
+
+php artisan make:migration create_sponsored_recipient_table --create=sponsored_recipient
+
+php artisan make:migration create_transaction_table --create=transaction
 
 php artisan make:migration add_role_to_users_table --table=users
 

@@ -2,9 +2,10 @@
 
 namespace app\Models;
 
-use Illuminate\Support\Facades\DB;
-
 use App\Models\DirectSponsorBaseModel;
+use App\Models\SponsorMember;
+use App\Models\RecipientMember;
+use App\Models\CoordinatorMember;
 use App\Models\MailerDS as Mailer;
 
 
@@ -41,11 +42,7 @@ class ProjectMember extends DirectSponsorBaseModel
     }
 
     public function userRole() {
-        return $this->belongsTo('App\Models\UserRole');
-    }
-
-    public function sponsoredRecipients() {
-        return $this->hasMany('App\Models\SponsoredRecipient');
+        return $this->belongsTo('App\Models\UserRole', 'user_role_id');
     }
 
     public function transactions() {
@@ -53,34 +50,48 @@ class ProjectMember extends DirectSponsorBaseModel
     }
 
     /*
-     * Derived Relationships
+     * Member Methods
      */
-    public function isSponsorRole() {
-        if ($this->userRole->role_type == 'Sponsor') {
-            return true;
-        } else {
+    public function isActive() {
+        if (!$this->userRole->user->registered) {
             return false;
+        }
+        if ($this->status != 'Active') {
+            return false;
+        }
+        return true;
+    }
+
+    public function castMemberRole() {
+        switch ($this->userRole->role_type) {
+            case 'Sponsor':
+                $sponsorMember = new SponsorMember;
+                $sponsorMember->id = $this->id;
+                $sponsorMember->fill($this->toArray());
+                return $sponsorMember;
+            case 'Coordinator':
+                $coordinatorMember = new CoordinatorMember;
+                $coordinatorMember->id = $this->id;
+                $coordinatorMember->fill($this->toArray());
+                return $coordinatorMember;
+            case 'Recipient':
+                $recipientMember = new RecipientMember;
+                $recipientMember->id = $this->id;
+                $recipientMember->fill($this->toArray());
+                return $recipientMember;
+            default:
+                return $this;
         }
     }
 
-    private function getMailer() {
+    /*
+     * Utility Methods
+     */
+    protected function getMailer() {
         if (!isset($this->mailer)) {
             $this->mailer = new Mailer;
         }
         return $this->mailer;
-    }
-
-    public function addRecipientToSponsor(ProjectMember $recipientMember, $promisedAmount=0) {
-        DB::transaction(function() use($recipientMember, $promisedAmount) {
-            $sponsoredRecipient = new SponsoredRecipient;
-            $sponsoredRecipient->recipient_member_id = $recipientMember->id;
-            $sponsoredRecipient->status = 'Active';
-            $sponsoredRecipient->promised_amount = $promisedAmount;
-            $sponsoredRecipient->setNextPaymentDueFromSponsor();
-
-            $this->sponsoredRecipients()->save($sponsoredRecipient);
-            return $this;
-        });
     }
 
 }

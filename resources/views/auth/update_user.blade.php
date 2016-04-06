@@ -54,7 +54,7 @@
 
             <div class="row clearfix">
                 <div class="col-xs-12 col-md-12 form-group">
-                    <button class="btn btn-success" type="submit">Update</button>
+                    <button class="btn btn-primary" type="submit">Update</button>
                 </div>
             </div>
 

@@ -1,30 +1,12 @@
-<!--
-  This file is part of Organic Directory Application
+<div class='row'>
+    {!! Form::open(array('route' => array('invitation.store', $project->id), '_method' => 'PUT', 'files' => false)) !!}
+        {!! csrf_field() !!}
+        {!! method_field('PUT') !!}
 
-  @copyright Copyright (c) 2016 McGarryIT
-  @link      (http://www.mcgarryit.com)
- -->
-@extends('default.welcome')
+        @include('inputgroups.invitation_detail')
 
-@section('content')
-<div class="container-fluid col-xs-12 left">
-    <div class="col-xs-12">
-        <p class="lead col-xs-3 col-md-4 right text-right" for="email">Send Invitation</p>
-    </div>
-    <div class='col-md-3'>
-
-    </div>
-    <div class='col-xs-10 col-md-9'>
-        <form method="POST" action="/invitation/store">
-
-            @include('inputgroups.invitation')
-
-            <div class="row">
-                <div class="col-md-6 form-group">
-                    <button class="btn btn-success" type="submit">Send</button>
-                </div>
-            </div>
-        </form>
-    </div>
+        <div class="col-xs-11 col-xs-offset-1 col-sm-3 col-sm-offset-0 pull-left">
+            <button id="sendInvitation" class="btn btn-primary pull-left" type="submit">Send Invitation</button>
+        </div>
+    {!! Form::close() !!}
 </div>
-@endsection

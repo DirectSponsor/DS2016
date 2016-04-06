@@ -67,14 +67,23 @@ class Handler extends ExceptionHandler
             return response()->view('errors.fatal', ['exceptionMessage' => 'Fatal Error='.$e->getCode()], 500);
         }
         if (method_exists($e, 'getStatusCode')) {
+            Log::error(' FILE:..>'.$e->getFile().' LINE:...>'.$e->getLine()
+                    .' Error Code:...== '.$e->getCode()
+                    .' Message:...== '.$e->getMessage().' [  Path = '.$request->url().'  ]');
+
             if ($e->getStatusCode() == 403) {
-                return response()->view('errors.403', ['exceptionMessage' => 'Unauthorised Action=403'], 500);
+                $message = $e->getMessage();
+                if (!$message) {
+                    $message = 'Unauthorised Action=403';
+                }
+                return response()->view('errors.403', ['exceptionMessage' => $message], 500);
             }
             if ($e->getStatusCode() == 404) {
-                Log::error(' FILE:..>'.$e->getFile().' LINE:...>'.$e->getLine()
-                        .' NOT FOUND:...> 404'
-                        .' Message:...>'.'Page Requested Could Not Be Found=404 [  Path = '.$request->url().'  ]');
-                return response()->view('errors.404', ['exceptionMessage' => 'Page Requested Could Not Be Found=404 [  Path = '.$request->url().'  ]'], 500);
+                $message = $e->getMessage();
+                if (!$message) {
+                    $message = 'Data record not found';
+                }
+                return response()->view('errors.404', ['exceptionMessage' => $message], 500);
             }
         }
 

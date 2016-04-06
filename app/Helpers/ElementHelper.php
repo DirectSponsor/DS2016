@@ -7,9 +7,10 @@
  * @link      (http://www.mcgarryit.com)
  */
 
-namespace App\Helpers;
+namespace app\Helpers;
 
 use Illuminate\Support\Facades\DB;
+
 
 class ElementHelper {
 
@@ -82,5 +83,16 @@ class ElementHelper {
       return $enum;
     }
 
+    public static function getSetValueList($tableName='', $column='') {
+      $type = DB::select( DB::raw("SHOW COLUMNS FROM ".$tableName." WHERE Field = '{$column}'") )[0]->Type;
+      preg_match('/^set\((.*)\)$/', $type, $matches);
+      $set = array();
+      foreach( explode(',', $matches[1]) as $value )
+      {
+        $v = trim( $value, "'" );
+        $set = array_add($set, $v, $v);
+      }
+      return $set;
+    }
+
 }
-?>

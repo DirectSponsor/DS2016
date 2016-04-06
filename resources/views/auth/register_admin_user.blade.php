@@ -42,7 +42,7 @@
 
             <div class="row clearfix">
                 <div class="col-xs-12 col-md-12 form-group">
-                    <button class="btn btn-success" type="submit">Register</button>
+                    <button class="btn btn-primary" type="submit">Register</button>
                 </div>
             </div>
 

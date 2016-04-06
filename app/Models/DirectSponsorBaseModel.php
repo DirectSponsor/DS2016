@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use App\Exceptions\ModelException;
 

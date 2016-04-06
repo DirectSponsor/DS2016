@@ -11,73 +11,83 @@
 |
 */
 
-Route::resource('users', 'UsersController');
-Route::get('/',array('as'=>'index','uses'=>'UsersController@loginForm'));
-Route::get('/auth/login',array('as'=>'login.form','uses'=>'UsersController@loginForm'));
-Route::get('/login',array('as'=>'login.form','uses'=>'UsersController@loginForm'));
-Route::post('/',array('as'=>'login.action','uses'=>'UsersController@loginAction'));
-Route::get('/logout',array('as'=>'logout','uses'=>'UsersController@logout'));
-Route::get('/panel',array('as'=>'panel','uses'=>'UsersController@panel'));
-Route::get('/resend', array('as'=>'users.resendConfEmailForm', 'uses' => 'UsersController@resendConfEmailForm'));
-Route::post('/resend', array('as'=>'users.resendConfEmailAction', 'uses' => 'UsersController@resendConfEmailAction'));
-Route::get('/forget', array('as'=>'users.forgetPasswordForm', 'uses' => 'UsersController@forgetPasswordForm'));
-Route::post('/forget', array('as'=>'users.forgetPasswordAction', 'uses' => 'Auth\PasswordController@postEmail'));
-Route::get('/forgetConfirm/{token}', array('as'=>'users.forgetPasswordConfirmForm', 'uses' => 'UsersController@forgetPasswordConfirmForm'));
-Route::post('/forgetConfirm/{token}', array('as'=>'users.forgetPasswordConfirmAction', 'uses' => 'Auth\PasswordController@postReset'));
+Route::get('/', function()
+{
+    return View::make('auth.login');
+});
+//
+// Project routes
+//
+Route::resource('projects', 'ProjectsController');
+Route::get('/projects',array('as'=>'projects','uses'=>'ProjectsController@index'));
+Route::get('/projects/create',array('as'=>'project.create','uses'=>'ProjectsController@create'));
+Route::put('/projects/store',array('as'=>'project.store','uses'=>'ProjectsController@store'));
+Route::get('/projects/edit/{pid}',array('as'=>'project.edit','uses'=>'ProjectsController@edit'));
+Route::post('/projects/update/{pid}',array('as'=>'project.update','uses'=>'ProjectsController@update'));
+Route::get('/projects/{id}/support',array('as'=>'project.support','uses'=>'ProjectsController@supportShow'));
+Route::post('/projects/{id}/support/confirm',array('as'=>'project.supportconfirm','uses'=>'ProjectsController@supportConfirm'));
+//
+Route::put('/projects/{pid}/withdraw',array('as'=>'projects.withdraw','uses'=>'ProjectsController@withdraw'));
+Route::put('/projects/{pid}/close',array('as'=>'projects.close','uses'=>'ProjectsController@close'));
+Route::put('/projects/{pid}/open',array('as'=>'projects.open','uses'=>'ProjectsController@open'));
+//
+// Member routes
+//
+Route::get('/members/{pid}/recipients',array('as'=>'recipients.list','uses'=>'MembersController@listMembers'));
+Route::get('/members/{pid}/sponsors',array('as'=>'sponsors.list','uses'=>'MembersController@listMembers'));
 
-Route::get('/fotFound',array('as' => 'notFound','uses' => 'UsersController@notFound'));
-Route::get('/permissionsDenied',array('as' => 'permissionsDenied','uses' => 'UsersController@permissionsDenied'));
-Route::get('/visitorOnly',array('as' => 'visitorOnly','uses' => 'UsersController@visitorOnly'));
-
-Route::get('/members/join/coordinator/{url}',array('as'=>'coordinator.join','uses'=>'UsersController@newUser'));
-Route::get('/members/join/sponsor/',array('as'=>'sponsors.join','uses'=>'UsersController@newUser'));
-Route::get('/members/join/recipient/{invitation_id}',array('as'=>'recipients.join','uses'=>'UsersController@newUser'));
-Route::put('/members/createuser/{project_id}/{invitation_id?}',array('as'=>'members.create', 'uses' => 'UsersController@createUser'));
-Route::get('/members/createuser/{hash}/confirm',array('as'=>'members.confirm','uses'=>'UsersController@confirmUser'));
-Route::get('/members/{id}/edit',array('as'=>'members.edit', 'uses' => 'UsersController@edit'));
-Route::put('/members/{id}/updatedetails',array('as'=>'members.updateDetails', 'uses' => 'UsersController@updateDetails'));
-Route::put('/members/{id}/changePassword',array('as'=>'members.updatePass', 'uses' => 'UsersController@updatePass'));
-
-Route::resource('sponsors', 'SponsorsController');
-Route::delete('/sponsors/{id}/activate',array('as'=>'sponsors.activate','uses'=>'SponsorsController@activate'));
-Route::delete('/sponsors/{id}/{pid}/suspend',array('as'=>'sponsors.suspend','uses'=>'SponsorsController@suspend'));
-Route::get('/sponsors/{hash}/confirm',array('as'=>'sponsors.confirm','uses'=>'SponsorsController@confirm'));
-Route::get('/mySponsors',array('as'=>'mySponsors','uses'=>'SponsorsController@mySponsors'));
-Route::get('/sponsors/{id}/projects',array('as'=>'sponsors.projects','uses'=>'SponsorsController@projects'));
-Route::get('/sponsors/forproject/{pid}',array('as'=>'sponsors.forproject','uses'=>'SponsorsController@forProject'));
-
-Route::resource('recipients', 'RecipientsController');
-Route::post('/recipients/register/{url}',array('as'=>'recipients.register','uses'=>'RecipientsController@register'));
-Route::get('/recipients/of/{id}',array('as'=>'recipients.perProject','uses'=>'RecipientsController@perProject'));
-Route::get('/myRecipients',array('as'=>'myRecipients','uses'=>'RecipientsController@myRecipients'));
+Route::delete('/sponsors/{id}/activate', array('as'=>'sponsors.activate','uses'=>'MembersController@activate'));
+Route::delete('/sponsors/{id}/{pid}/suspend', array('as'=>'sponsors.suspend','uses'=>'MembersController@suspend'));
 
 Route::resource('coordinators', 'CoordinatorsController');
 Route::get('/coordinators/{id}/projects',array('as'=>'projects.perCoordinator','uses'=>'ProjectsController@perCoordinator'));
 
-Route::resource('projects', 'ProjectsController');
-Route::get('/projects/{id}/sponsors',array('as'=>'sponsors.perProject','uses'=>'SponsorsController@perProject'));
-Route::get('/projects/{id}/recipients',array('as'=>'recipients.perProject','uses'=>'RecipientsController@perProject'));
-Route::delete('/projects/{id}/withdraw',array('as'=>'projects.withdraw','uses'=>'ProjectsController@withdraw'));
-Route::delete('/projects/{id}/close',array('as'=>'projects.close','uses'=>'ProjectsController@close'));
-Route::delete('/projects/{id}/open',array('as'=>'projects.open','uses'=>'ProjectsController@open'));
-Route::get('/myProject',array('as'=>'myProject','uses'=>'ProjectsController@myProject'));
-Route::get('/joinProject',array('as'=>'joinProject','uses'=>'ProjectsController@joinProject'));
-Route::get('/joinProject/{id}',array('as'=>'joinProjectAction','uses'=>'ProjectsController@joinProjectAction'));
+// Transaction routes
+//
+Route::get('/transactions/pending/{projectid}/{memberId?}', array('as' => 'pendingreceipts', 'uses' => 'TransactionsController@pendingReceipts'));
+Route::post('/transactions/{transid}/confirm', array('as' => 'receipt.confirm', 'uses' => 'TransactionsController@confirmReceipt'));
+Route::post('/transactions/{transid}/late', array('as' => 'receipt.late', 'uses' => 'TransactionsController@confirmLate'));
+Route::get('/transactions/add/receipt',array('as'=>'payments.add','uses'=>'TransactionsController@add'));
+Route::post('/transactions/save/{pid}/receipt',array('as'=>'payments.save','uses'=>'TransactionsController@save'));
+Route::get('/transactions/{projectid}/spends',array('as'=>'project.spends','uses'=>'TransactionsController@spends'));
 
-Route::resource('payments', 'PaymentsController');
-Route::get('/myTransactions',array('as'=>'myTransactions','uses'=>'PaymentsController@myTransactions'));
-Route::get('/payments/add/{pid}/{uid}',array('as'=>'payments.add','uses'=>'PaymentsController@add'));
-Route::get('/payments/request/{pid}/{uid}',array('as'=>'payments.request','uses'=>'PaymentsController@request'));
-Route::post('/payments/save/{pid}/{uid}',array('as'=>'payments.save','uses'=>'PaymentsController@save'));
-Route::put('/payments/accept/{pid}',array('as'=>'payments.accept','uses'=>'PaymentsController@accept'));
-Route::put('/payments/late/{pid}',array('as'=>'payments.late','uses'=>'PaymentsController@late'));
-Route::delete('/payments/reject/{pid}',array('as'=>'payments.reject','uses'=>'PaymentsController@reject'));
+// Invitation routes
+//
+Route::get('/invitations',array('as'=>'invitations.index','uses'=>'InvitationsController@index'));
+Route::put('/invitation/{pid}/store',array('as'=>'invitation.store','uses'=>'InvitationsController@store'));
+Route::get('/invitations/{invitationId}/resend',array('as'=>'invitation.resend','uses'=>'InvitationsController@resend'));
 
-Route::resource('projects.invitations', 'InvitationsController');
-Route::resource('settings', 'SettingsController');
-Route::resource('projects.spends', 'SpendsController');
-Route::get('/myActivities',array('as'=>'myActivities','uses'=>'SpendsController@myActivities'));
+// Authentication routes...
+//
+Route::get('/auth/login', array('as' => 'login', 'Auth\AuthController@getLogin'));
+Route::post('/auth/login', 'Auth\AuthController@postLogin');
+Route::get('/auth/logout', 'Auth\AuthController@getLogout');
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
+// Account / Registration routes...
+//
+Route::get('/register/sponsor', array('as' => 'register.sponsor', 'uses' => 'Auth\AuthController@getRegister'));
+Route::get('/register/member/{encyptedstring}', array('as' => 'register.user', 'uses' => 'Auth\AuthController@getRegister'));
+Route::post('/register/sponsor', 'Auth\AuthController@postRegister');
+Route::post('/register/member', 'Auth\AuthController@postRegister');
+Route::get('/register/{hash}/confirm/sponsor',array('as'=>'sponsor.confirm','uses'=>'UsersController@confirm'));
+Route::get('/register/{hash}/confirm/recipient',array('as'=>'recipient.confirm','uses'=>'UsersController@confirm'));
+Route::get('/register/{hash}/confirm/coordinator',array('as'=>'coordinator.confirm','uses'=>'UsersController@confirm'));
+//
+Route::get('/panel',array('as'=>'panel','uses'=>'UsersController@panel'));
+Route::get('/resend', array('as'=>'users.resendConfEmailForm', 'uses' => 'UsersController@resendConfEmailForm'));
+//
+// User routes
+//
+Route::get('/user/{id}/edit',array('as'=>'user.edit', 'uses' => 'UsersController@edit'));
+Route::put('/user/{id}/updatedetails',array('as'=>'user.updateDetails', 'uses' => 'UsersController@updateDetails'));
+Route::put('/user/{id}/changePassword',array('as'=>'user.updatePass', 'uses' => 'UsersController@updatePass'));
+//
+// Password reset link request routes...
+//
+Route::get('password/email', 'Auth\PasswordController@getEmail');
+Route::post('password/email', 'Auth\PasswordController@postEmail');
+
+// Password reset routes...
+//
+Route::get('password/reset/{token}', 'Auth\PasswordController@getReset');
+Route::post('password/reset', 'Auth\PasswordController@postReset');

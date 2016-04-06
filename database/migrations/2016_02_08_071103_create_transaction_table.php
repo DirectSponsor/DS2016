@@ -14,14 +14,15 @@ class CreateTransactionTable extends Migration
     {
         Schema::create('transaction', function (Blueprint $table) {
             $table->increments('id');
-            $table->date('due_date')->default(NULL);
+            $table->timestamp('due_date')->default(NULL);
             $table->string('month', 3)->default(NULL);
             $table->enum('status', ['Pending', 'Confirmed', 'Late'])->default('Pending');
             $table->enum('trans_type', ['Receipt', 'Fund Receipt', 'Fund Expense'])->default(NULL);
             $table->integer('project_member_id')->unsigned();
             $table->integer('sender_member_id')->unsigned();
-            $table->decimal('euro_amount', 5, 2);
-            $table->decimal('local_amount', 5, 2);
+            $table->decimal('euro_amount', 9, 2);
+            $table->decimal('local_amount', 9, 2);
+            $table->string('description', 100)->default(NULL);
             $table->integer('updated_by')->unsigned();
             $table->timestamps();
 
