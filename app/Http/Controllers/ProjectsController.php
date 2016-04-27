@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use app\Http\Controllers\DirectSponsorBaseController;
+use App\Http\Controllers\DirectSponsorBaseController;
 use Auth;
 use Illuminate\Support\Facades\Gate;
 use Session;

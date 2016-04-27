@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
-use app\Http\Controllers\DirectSponsorBaseController;
+use App\Http\Controllers\DirectSponsorBaseController;
 use App\Models\Coordinator;
 use App\Models\Project;
 
