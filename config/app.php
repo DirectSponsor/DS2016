@@ -78,7 +78,7 @@ return [
     |
     */
 
-    'key' => env('APP_KEY', 'SomeRandomString'),
+    'key' => env('APP_KEY', 'xYgdhjte3678sJhlxYgdhjte3678sJhl'),
 
     'cipher' => 'AES-256-CBC',
 
@@ -145,7 +145,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ],
 
     /*
@@ -196,7 +196,7 @@ return [
         'Form'      => 'Collective\Html\FormFacade',
         'HTML'      => 'Collective\Html\HtmlFacade',
         'Gate' => Illuminate\Support\Facades\Gate::class,
-        'element' => App\Helpers\ElementHelper::class
+        'element' => app\Helpers\ElementHelper::class
     ],
 
 ];
