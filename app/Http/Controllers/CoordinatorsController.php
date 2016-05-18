@@ -5,6 +5,7 @@ use App\Http\Controllers\DirectSponsorBaseController;
 use App\Models\Coordinator;
 use App\Models\Project;
 
+
 class CoordinatorsController extends DirectSponsorBaseController {
 
     public function __construct(){

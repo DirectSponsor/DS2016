@@ -10,7 +10,7 @@ git pull git@github.com:DirectSponsor/DS2016.git 01-New-Start
 /c/DS2016
 
 /* iofga repository */
-git push git@github.com:DirectSponsor/DS2016.git production
+git push git@github.com:DirectSponsor/DS2016.git 01-New-Start
 
 /* Windows Flush DNS after hosts change */
 ipconfig /flushdns
