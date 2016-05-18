@@ -13,3 +13,6 @@ storage/
 .env
 .env.example
 /nbproject/private/
+
+# PHPStorm
+.idea/
